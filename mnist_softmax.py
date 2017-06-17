@@ -19,6 +19,7 @@ def main(_):
   mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
 
   # Create the model
+  # (784 because each image is 28 x 28 px. 28^2 is 784)
   x = tf.placeholder(tf.float32, [None, 784])
   W = tf.Variable(tf.zeros([784, 10]))
   b = tf.Variable(tf.zeros([10]))
@@ -36,13 +37,12 @@ def main(_):
   #
   # So here we use tf.nn.softmax_cross_entropy_with_logits on the raw
   # outputs of 'y', and then average across the batch.
-  cross_entropy = tf.reduce_mean(
-      tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
+  cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
   train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
   sess = tf.InteractiveSession()
   tf.global_variables_initializer().run()
-  # Train
+  # Train. Grab random set of training data and train with that.
   for _ in range(1000):
     batch_xs, batch_ys = mnist.train.next_batch(100)
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
@@ -50,8 +50,9 @@ def main(_):
   # Test trained model
   correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-  print(sess.run(accuracy, feed_dict={x: mnist.test.images,
-                                      y_: mnist.test.labels}))
+  feed_dict={x: mnist.test.images,y_: mnist.test.labels}
+  result = sess.run(accuracy,feed_dict=feed_dict)
+  print("Accuracy: " + str(result))
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
